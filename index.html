@@ -29,7 +29,6 @@
       padding: 18px 16px 34px;
     }
 
-    /* FULL-SCREEN CONFETTI CANVAS */
     #confettiCanvas {
       position: fixed;
       inset: 0;
@@ -123,7 +122,6 @@
       margin: 0 auto;
     }
 
-    /* ✅ Use IMG instead of IFRAME for best phone compatibility */
     .gif-img {
       width: 100%;
       height: auto;
@@ -147,15 +145,10 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
-    <!-- FACE (neutral -> happy on YES) -->
-    <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
+    <svg class="art" viewBox="0 0 320 240">
       <circle cx="160" cy="120" r="80" fill="#f7c7a1"/>
-
-      <!-- Eyes -->
       <circle id="leftEye" cx="130" cy="110" r="8" fill="#111"/>
       <circle id="rightEye" cx="190" cy="110" r="8" fill="#111"/>
-
-      <!-- Mouth starts neutral -->
       <path id="mouth"
             d="M135 150 Q160 150 185 150"
             stroke="#111"
@@ -197,14 +190,17 @@
     </section>
   </main>
 
+  <!-- 🎵 ADDED: Audio file -->
+  <audio id="bgMusic" src="song1.mp3" preload="auto"></audio>
+
   <script>
     const zone = document.getElementById("zone");
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
+    const music = document.getElementById("bgMusic"); // 🎵
 
-    /* TITLE: Dear / Patakha / Priyanka (random) */
     (function setRandomName() {
       const names = ["Dear", "Patakha", "Priyanka"];
       const randomName = names[Math.floor(Math.random() * names.length)];
@@ -212,7 +208,6 @@
         `${randomName}, will you be my valentine?`;
     })();
 
-    /* CONFETTI (SAFE INIT) */
     const confettiCanvas = document.getElementById("confettiCanvas");
 
     function resizeConfettiCanvas() {
@@ -225,7 +220,6 @@
 
     resizeConfettiCanvas();
     window.addEventListener("resize", resizeConfettiCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
     let confettiInstance = null;
     if (window.confetti && typeof window.confetti.create === "function") {
@@ -237,32 +231,9 @@
 
     function fullScreenConfetti() {
       if (!confettiInstance) return;
-
-      const end = Date.now() + 1600;
-
-      (function frame() {
-        confettiInstance({
-          particleCount: 12,
-          spread: 90,
-          startVelocity: 45,
-          ticks: 180,
-          origin: { x: Math.random(), y: Math.random() * 0.3 }
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      })();
-
-      setTimeout(() => {
-        confettiInstance({
-          particleCount: 300,
-          spread: 140,
-          startVelocity: 60,
-          ticks: 220,
-          origin: { x: 0.5, y: 0.55 }
-        });
-      }, 300);
+      confettiInstance({ particleCount: 250, spread: 120 });
     }
 
-    /* NO BUTTON: hide only while hovering (desktop) + tap (mobile) */
     function hideNo() {
       noBtn.style.opacity = "0";
       noBtn.style.transform = "scale(0)";
@@ -275,11 +246,9 @@
       yesBtn.style.transform = "translateY(-50%) scale(1)";
     }
 
-    // Desktop hover
     noBtn.addEventListener("mouseenter", hideNo);
     noBtn.addEventListener("mouseleave", showNo);
 
-    // Mobile tap: hide briefly then show
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       hideNo();
@@ -287,8 +256,8 @@
     }, { passive: false });
 
     /* YES CLICK */
-    yesBtn.addEventListener("click", () => {
-      // Change face to happy
+    yesBtn.addEventListener("click", async () => {
+
       const mouth = document.getElementById("mouth");
       const leftEye = document.getElementById("leftEye");
       const rightEye = document.getElementById("rightEye");
@@ -305,6 +274,14 @@
 
       resizeConfettiCanvas();
       fullScreenConfetti();
+
+      // 🎵 PLAY SONG
+      try {
+        music.volume = 0.85;
+        await music.play();
+      } catch (err) {
+        console.log("Autoplay blocked:", err);
+      }
     });
   </script>
 </body>
