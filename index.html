@@ -26,7 +26,11 @@
       place-items: center;
       background: radial-gradient(circle at top, var(--bg2), var(--bg1));
       font-family: system-ui, sans-serif;
-      overflow: hidden;
+
+      /* CHANGED: allow scroll */
+      overflow-y: auto;
+      overflow-x: hidden;
+
       padding: 16px;
     }
 
@@ -48,6 +52,11 @@
       border-radius: 22px;
       text-align: center;
       box-shadow: 0 18px 60px rgba(0,0,0,.15);
+
+      /* NEW: keep card usable on small screens */
+      max-height: calc(100svh - 32px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .art {
@@ -116,6 +125,22 @@
       margin: 10px 0 12px;
     }
 
+    /* NEW: Responsive GIF container */
+    .gif-wrap {
+      max-width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    /* NEW: iframe scales, height adapts by screen */
+    .gif-iframe {
+      width: 100%;
+      height: min(320px, 45vh);
+      border: 0;
+      display: block;
+    }
+
     @keyframes pop {
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
@@ -175,21 +200,20 @@
 
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
-    <!-- RESULT (Jake Peralta via GIPHY iframe) -->
+    <!-- RESULT -->
     <section class="result" id="result">
-      <h2 style="font-weight:900;">COOL COOL COOL COOL COOL 😎💖</h2>
+      <h2 style="font-weight:900;">Your 3rd Best Decision ever 😎💖</h2>
 
       <p style="font-size:18px; margin-bottom:15px;">
-        Your 3rd best decision after Mar 23rd and Dec 16th  .
+        After March 23rd and Dec 16th ofcourse :) .
       </p>
 
-      <div style="max-width:100%; border-radius:18px; overflow:hidden;">
+      <div class="gif-wrap">
         <iframe
+          class="gif-iframe"
           src="https://giphy.com/embed/J4spSqOEaft42wSnnT"
-          width="100%"
-          height="260"
-          frameBorder="0"
-          allowFullScreen>
+          allowFullScreen
+          title="Jake Peralta Celebration">
         </iframe>
       </div>
 
@@ -210,8 +234,8 @@
     (function setRandomName() {
       const names = ["Dear", "Patakha", "Priyanka"];
       const randomName = names[Math.floor(Math.random() * names.length)];
-      const titleEl = document.getElementById("valentineText");
-      titleEl.textContent = `${randomName}, will you be my valentine?`;
+      document.getElementById("valentineText").textContent =
+        `${randomName}, will you be my valentine?`;
     })();
 
     /* ---------- CONFETTI (SAFE INIT) ---------- */
@@ -238,7 +262,7 @@
     }
 
     function fullScreenConfetti() {
-      if (!confettiInstance) return; // prevents page from breaking if CDN blocked
+      if (!confettiInstance) return;
 
       const end = Date.now() + 1600;
 
@@ -264,22 +288,18 @@
       }, 300);
     }
 
-    /* ---------- NO BUTTON DISAPPEARS ON HOVER ---------- */
-    // Works for desktop hover
-    noBtn.addEventListener("mouseenter", () => {
+    /* ---------- NO BUTTON DISAPPEARS ON HOVER / TAP ---------- */
+    function vanishNo() {
       noBtn.style.opacity = "0";
       noBtn.style.transform = "scale(0)";
       noBtn.style.pointerEvents = "none";
       yesBtn.style.transform = "translateY(-50%) scale(1.2)";
-    });
+    }
 
-    // Extra: if she taps "No" on mobile, also vanish it
+    noBtn.addEventListener("mouseenter", vanishNo);
     noBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      noBtn.style.opacity = "0";
-      noBtn.style.transform = "scale(0)";
-      noBtn.style.pointerEvents = "none";
-      yesBtn.style.transform = "translateY(-50%) scale(1.2)";
+      vanishNo();
     });
 
     /* ---------- YES CLICK ---------- */
@@ -287,6 +307,10 @@
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
+
+      // Ensure the result is visible at the top on small screens
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+
       resizeConfettiCanvas();
       fullScreenConfetti();
     });
