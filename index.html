@@ -134,6 +134,19 @@
       font-weight: 700;
     }
 
+    #musicToggle {
+      margin-top: 14px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      background: #111827;
+      color: white;
+      box-shadow: 0 10px 24px rgba(0,0,0,.14);
+      display: none;
+    }
+
     @keyframes pop {
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
@@ -184,13 +197,14 @@
         />
       </div>
 
+      <button id="musicToggle">⏸ Pause Music</button>
+
       <p style="margin-top:15px; font-weight:600;">
         Smort choice. Very smort. 💍✨
       </p>
     </section>
   </main>
 
-  <!-- 🎵 ADDED: Audio file -->
   <audio id="bgMusic" src="song1.mp3" preload="auto"></audio>
 
   <script>
@@ -199,7 +213,8 @@
     const noBtn = document.getElementById("noBtn");
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
-    const music = document.getElementById("bgMusic"); // 🎵
+    const music = document.getElementById("bgMusic");
+    const musicToggle = document.getElementById("musicToggle");
 
     (function setRandomName() {
       const names = ["Dear", "Patakha", "Priyanka"];
@@ -207,32 +222,6 @@
       document.getElementById("valentineText").textContent =
         `${randomName}, will you be my valentine?`;
     })();
-
-    const confettiCanvas = document.getElementById("confettiCanvas");
-
-    function resizeConfettiCanvas() {
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-      confettiCanvas.style.width = "100vw";
-      confettiCanvas.style.height = "100vh";
-    }
-
-    resizeConfettiCanvas();
-    window.addEventListener("resize", resizeConfettiCanvas);
-
-    let confettiInstance = null;
-    if (window.confetti && typeof window.confetti.create === "function") {
-      confettiInstance = window.confetti.create(confettiCanvas, {
-        resize: false,
-        useWorker: true
-      });
-    }
-
-    function fullScreenConfetti() {
-      if (!confettiInstance) return;
-      confettiInstance({ particleCount: 250, spread: 120 });
-    }
 
     function hideNo() {
       noBtn.style.opacity = "0";
@@ -248,39 +237,48 @@
 
     noBtn.addEventListener("mouseenter", hideNo);
     noBtn.addEventListener("mouseleave", showNo);
-
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       hideNo();
       setTimeout(showNo, 900);
     }, { passive: false });
 
-    /* YES CLICK */
+    const confettiInstance = window.confetti
+      ? window.confetti.create(document.getElementById("confettiCanvas"), { resize: true })
+      : null;
+
+    function fullScreenConfetti() {
+      if (!confettiInstance) return;
+      confettiInstance({ particleCount: 250, spread: 120 });
+    }
+
     yesBtn.addEventListener("click", async () => {
 
-      const mouth = document.getElementById("mouth");
-      const leftEye = document.getElementById("leftEye");
-      const rightEye = document.getElementById("rightEye");
-
-      if (mouth) mouth.setAttribute("d", "M130 150 Q160 185 190 150");
-      if (leftEye) leftEye.setAttribute("r", "10");
-      if (rightEye) rightEye.setAttribute("r", "10");
+      document.getElementById("mouth")
+        .setAttribute("d", "M130 150 Q160 185 190 150");
 
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
+      musicToggle.style.display = "inline-block";
 
-      result.scrollIntoView({ behavior: "smooth", block: "start" });
-
-      resizeConfettiCanvas();
       fullScreenConfetti();
 
-      // 🎵 PLAY SONG
       try {
         music.volume = 0.85;
         await music.play();
       } catch (err) {
         console.log("Autoplay blocked:", err);
+      }
+    });
+
+    musicToggle.addEventListener("click", async () => {
+      if (music.paused) {
+        await music.play();
+        musicToggle.textContent = "⏸ Pause Music";
+      } else {
+        music.pause();
+        musicToggle.textContent = "▶ Resume Music";
       }
     });
   </script>
