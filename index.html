@@ -29,6 +29,7 @@
       padding: 18px 16px 34px;
     }
 
+    /* FULL-SCREEN CONFETTI CANVAS */
     #confettiCanvas {
       position: fixed;
       inset: 0;
@@ -122,11 +123,11 @@
       margin: 0 auto;
     }
 
-    .gif-iframe {
+    /* ✅ Use IMG instead of IFRAME for best phone compatibility */
+    .gif-img {
       width: 100%;
-      border: 0;
+      height: auto;
       display: block;
-      height: clamp(200px, 35vh, 320px);
     }
 
     .plan {
@@ -146,21 +147,21 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
-    <!-- FACE (changes on YES) -->
+    <!-- FACE (neutral -> happy on YES) -->
     <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
       <circle cx="160" cy="120" r="80" fill="#f7c7a1"/>
 
       <!-- Eyes -->
-      <circle id="leftEye" cx="130" cy="110" r="8"/>
-      <circle id="rightEye" cx="190" cy="110" r="8"/>
+      <circle id="leftEye" cx="130" cy="110" r="8" fill="#111"/>
+      <circle id="rightEye" cx="190" cy="110" r="8" fill="#111"/>
 
       <!-- Mouth starts neutral -->
       <path id="mouth"
             d="M135 150 Q160 150 185 150"
             stroke="#111"
-            stroke-width="5"
+            stroke-width="6"
             fill="transparent"
-            stroke-linecap="round"/>
+            stroke-linecap="round" />
     </svg>
 
     <h1 id="valentineText"></h1>
@@ -182,12 +183,12 @@
       <p class="plan">Get ready for 2 hrs of adventure, dinner with "Tabs" 🍆👀 :)</p>
 
       <div class="gif-wrap" style="margin-top:14px;">
-        <iframe
-          class="gif-iframe"
-          src="https://giphy.com/embed/J4spSqOEaft42wSnnT"
-          allowFullScreen
-          title="Jake Peralta Celebration">
-        </iframe>
+        <img
+          class="gif-img"
+          src="https://media.giphy.com/media/J4spSqOEaft42wSnnT/giphy.gif"
+          alt="Jake Peralta Celebration"
+          loading="lazy"
+        />
       </div>
 
       <p style="margin-top:15px; font-weight:600;">
@@ -261,7 +262,7 @@
       }, 300);
     }
 
-    /* NO BUTTON: hide only while hovering, re-appear when not hovering (desktop) */
+    /* NO BUTTON: hide only while hovering (desktop) + tap (mobile) */
     function hideNo() {
       noBtn.style.opacity = "0";
       noBtn.style.transform = "scale(0)";
@@ -274,10 +275,11 @@
       yesBtn.style.transform = "translateY(-50%) scale(1)";
     }
 
+    // Desktop hover
     noBtn.addEventListener("mouseenter", hideNo);
     noBtn.addEventListener("mouseleave", showNo);
 
-    /* Mobile: tap No -> hide briefly -> reappear */
+    // Mobile tap: hide briefly then show
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       hideNo();
@@ -286,11 +288,14 @@
 
     /* YES CLICK */
     yesBtn.addEventListener("click", () => {
-      // change face to happy
+      // Change face to happy
       const mouth = document.getElementById("mouth");
-      mouth.setAttribute("d", "M130 150 Q160 180 190 150");
-      document.getElementById("leftEye").setAttribute("r", "10");
-      document.getElementById("rightEye").setAttribute("r", "10");
+      const leftEye = document.getElementById("leftEye");
+      const rightEye = document.getElementById("rightEye");
+
+      if (mouth) mouth.setAttribute("d", "M130 150 Q160 185 190 150");
+      if (leftEye) leftEye.setAttribute("r", "10");
+      if (rightEye) rightEye.setAttribute("r", "10");
 
       zone.style.display = "none";
       hint.style.display = "none";
