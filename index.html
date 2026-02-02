@@ -289,19 +289,21 @@
       }, 300);
     }
 
-    /* NO BUTTON DISAPPEARS ON HOVER / TAP */
-    function vanishNo() {
+    /* NO BUTTON: hide only while hovering, re-appear when not hovering */
+    function hideNo() {
       noBtn.style.opacity = "0";
       noBtn.style.transform = "scale(0)";
-      noBtn.style.pointerEvents = "none";
       yesBtn.style.transform = "translateY(-50%) scale(1.2)";
     }
 
-    noBtn.addEventListener("mouseenter", vanishNo);
-    noBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      vanishNo();
-    });
+    function showNo() {
+      noBtn.style.opacity = "1";
+      noBtn.style.transform = "translateY(-50%) scale(1)";
+      yesBtn.style.transform = "translateY(-50%) scale(1)";
+    }
+
+    noBtn.addEventListener("mouseenter", hideNo);
+    noBtn.addEventListener("mouseleave", showNo);
 
     /* YES CLICK */
     yesBtn.addEventListener("click", () => {
