@@ -90,10 +90,7 @@
       background: var(--yes);
       color: #fff;
     }
-
-    #yesBtn:hover {
-      background: var(--yesHover);
-    }
+    #yesBtn:hover { background: var(--yesHover); }
 
     #noBtn {
       left: 62%;
@@ -149,10 +146,21 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
+    <!-- FACE (changes on YES) -->
     <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
       <circle cx="160" cy="120" r="80" fill="#f7c7a1"/>
-      <circle cx="130" cy="110" r="8"/>
-      <circle cx="190" cy="110" r="8"/>
+
+      <!-- Eyes -->
+      <circle id="leftEye" cx="130" cy="110" r="8"/>
+      <circle id="rightEye" cx="190" cy="110" r="8"/>
+
+      <!-- Mouth starts neutral -->
+      <path id="mouth"
+            d="M135 150 Q160 150 185 150"
+            stroke="#111"
+            stroke-width="5"
+            fill="transparent"
+            stroke-linecap="round"/>
     </svg>
 
     <h1 id="valentineText"></h1>
@@ -165,13 +173,15 @@
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
     <section class="result" id="result">
-      <h2>Aww, I knew you'd say yes! Your 3rd Best Decision ever 😎💖</h2>
+      <h2 style="font-weight:900;">Aww, I knew you'd say yes! Your 3rd Best Decision ever 😎💖</h2>
 
-      <p>After March 23rd and Dec 16th ofcourse :) .</p>
+      <p style="font-size:18px; margin-bottom:10px;">
+        After March 23rd and Dec 16th ofcourse :) .
+      </p>
 
       <p class="plan">Get ready for 2 hrs of adventure, dinner with "Tabs" 🍆👀 :)</p>
 
-      <div class="gif-wrap">
+      <div class="gif-wrap" style="margin-top:14px;">
         <iframe
           class="gif-iframe"
           src="https://giphy.com/embed/J4spSqOEaft42wSnnT"
@@ -180,7 +190,9 @@
         </iframe>
       </div>
 
-      <p>Smort choice. Very smort. 💍✨</p>
+      <p style="margin-top:15px; font-weight:600;">
+        Smort choice. Very smort. 💍✨
+      </p>
     </section>
   </main>
 
@@ -191,26 +203,31 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    // Random name
-    (function () {
+    /* TITLE: Dear / Patakha / Priyanka (random) */
+    (function setRandomName() {
       const names = ["Dear", "Patakha", "Priyanka"];
       const randomName = names[Math.floor(Math.random() * names.length)];
       document.getElementById("valentineText").textContent =
         `${randomName}, will you be my valentine?`;
     })();
 
-    // Confetti
+    /* CONFETTI (SAFE INIT) */
     const confettiCanvas = document.getElementById("confettiCanvas");
+
     function resizeConfettiCanvas() {
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = window.innerWidth * dpr;
-      confettiCanvas.height = window.innerHeight * dpr;
+      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+      confettiCanvas.style.width = "100vw";
+      confettiCanvas.style.height = "100vh";
     }
+
     resizeConfettiCanvas();
     window.addEventListener("resize", resizeConfettiCanvas);
+    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
     let confettiInstance = null;
-    if (window.confetti) {
+    if (window.confetti && typeof window.confetti.create === "function") {
       confettiInstance = window.confetti.create(confettiCanvas, {
         resize: false,
         useWorker: true
@@ -219,16 +236,32 @@
 
     function fullScreenConfetti() {
       if (!confettiInstance) return;
-      confettiInstance({
-        particleCount: 300,
-        spread: 140,
-        startVelocity: 60,
-        origin: { x: 0.5, y: 0.5 }
-      });
+
+      const end = Date.now() + 1600;
+
+      (function frame() {
+        confettiInstance({
+          particleCount: 12,
+          spread: 90,
+          startVelocity: 45,
+          ticks: 180,
+          origin: { x: Math.random(), y: Math.random() * 0.3 }
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+
+      setTimeout(() => {
+        confettiInstance({
+          particleCount: 300,
+          spread: 140,
+          startVelocity: 60,
+          ticks: 220,
+          origin: { x: 0.5, y: 0.55 }
+        });
+      }, 300);
     }
 
-    /* ---------- NO BUTTON BEHAVIOR ---------- */
-
+    /* NO BUTTON: hide only while hovering, re-appear when not hovering (desktop) */
     function hideNo() {
       noBtn.style.opacity = "0";
       noBtn.style.transform = "scale(0)";
@@ -241,23 +274,31 @@
       yesBtn.style.transform = "translateY(-50%) scale(1)";
     }
 
-    // Desktop hover
     noBtn.addEventListener("mouseenter", hideNo);
     noBtn.addEventListener("mouseleave", showNo);
 
-    // Mobile tap
+    /* Mobile: tap No -> hide briefly -> reappear */
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       hideNo();
-      setTimeout(showNo, 900); // reappear after 0.9 sec
-    });
+      setTimeout(showNo, 900);
+    }, { passive: false });
 
-    /* ---------- YES CLICK ---------- */
+    /* YES CLICK */
     yesBtn.addEventListener("click", () => {
+      // change face to happy
+      const mouth = document.getElementById("mouth");
+      mouth.setAttribute("d", "M130 150 Q160 180 190 150");
+      document.getElementById("leftEye").setAttribute("r", "10");
+      document.getElementById("rightEye").setAttribute("r", "10");
+
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
+
       result.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      resizeConfettiCanvas();
       fullScreenConfetti();
     });
   </script>
