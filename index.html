@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Will you be my Valentine?</title>
 
-  <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -134,17 +133,21 @@
       font-weight: 700;
     }
 
-    #musicToggle {
-      margin-top: 14px;
-      padding: 12px 18px;
+    /* 🎵 FIXED MUSIC BUTTON */
+    .music-control {
+      position: relative !important;
+      transform: none !important;
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 22px;
+      font-size: 16px;
+      font-weight: 700;
       border-radius: 999px;
-      font-weight: 900;
       border: none;
-      cursor: pointer;
-      background: #111827;
+      background: #0f172a;
       color: white;
-      box-shadow: 0 10px 24px rgba(0,0,0,.14);
-      display: none;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,.18);
     }
 
     @keyframes pop {
@@ -158,6 +161,7 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
+
     <svg class="art" viewBox="0 0 320 240">
       <circle cx="160" cy="120" r="80" fill="#f7c7a1"/>
       <circle id="leftEye" cx="130" cy="110" r="8" fill="#111"/>
@@ -186,6 +190,9 @@
         After March 23rd and Dec 16th ofcourse :) .
       </p>
 
+      <!-- 🎵 Music Button (Now Fixed Position) -->
+      <button id="musicToggle" class="music-control">⏸ Pause Music</button>
+
       <p class="plan">Get ready for 2 hrs of adventure, dinner with "Tabs" 🍆👀 :)</p>
 
       <div class="gif-wrap" style="margin-top:14px;">
@@ -196,8 +203,6 @@
           loading="lazy"
         />
       </div>
-
-      <button id="musicToggle">⏸ Pause Music</button>
 
       <p style="margin-top:15px; font-weight:600;">
         Smort choice. Very smort. 💍✨
@@ -223,46 +228,21 @@
         `${randomName}, will you be my valentine?`;
     })();
 
-    function hideNo() {
-      noBtn.style.opacity = "0";
-      noBtn.style.transform = "scale(0)";
-      yesBtn.style.transform = "translateY(-50%) scale(1.2)";
-    }
-
-    function showNo() {
-      noBtn.style.opacity = "1";
-      noBtn.style.transform = "translateY(-50%) scale(1)";
-      yesBtn.style.transform = "translateY(-50%) scale(1)";
-    }
-
-    noBtn.addEventListener("mouseenter", hideNo);
-    noBtn.addEventListener("mouseleave", showNo);
-    noBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      hideNo();
-      setTimeout(showNo, 900);
-    }, { passive: false });
-
-    const confettiInstance = window.confetti
-      ? window.confetti.create(document.getElementById("confettiCanvas"), { resize: true })
-      : null;
-
-    function fullScreenConfetti() {
-      if (!confettiInstance) return;
-      confettiInstance({ particleCount: 250, spread: 120 });
-    }
-
     yesBtn.addEventListener("click", async () => {
 
-      document.getElementById("mouth")
-        .setAttribute("d", "M130 150 Q160 185 190 150");
+      const mouth = document.getElementById("mouth");
+      const leftEye = document.getElementById("leftEye");
+      const rightEye = document.getElementById("rightEye");
+
+      if (mouth) mouth.setAttribute("d", "M130 150 Q160 185 190 150");
+      if (leftEye) leftEye.setAttribute("r", "10");
+      if (rightEye) rightEye.setAttribute("r", "10");
 
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
-      musicToggle.style.display = "inline-block";
 
-      fullScreenConfetti();
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
 
       try {
         music.volume = 0.85;
@@ -272,9 +252,9 @@
       }
     });
 
-    musicToggle.addEventListener("click", async () => {
+    musicToggle.addEventListener("click", () => {
       if (music.paused) {
-        await music.play();
+        music.play();
         musicToggle.textContent = "⏸ Pause Music";
       } else {
         music.pause();
