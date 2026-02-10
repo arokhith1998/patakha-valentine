@@ -68,10 +68,8 @@
       touch-action: none;
     }
 
+    /* Base button styling (no absolute here) */
     button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       padding: 16px 24px;
       font-size: 18px;
       font-weight: 800;
@@ -82,6 +80,13 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition: transform .15s ease, background .15s ease, opacity .25s ease;
+    }
+
+    /* Only Yes/No buttons are absolute */
+    .button-zone button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     #yesBtn {
@@ -133,9 +138,9 @@
       font-weight: 700;
     }
 
-    /* 🎵 FIXED MUSIC BUTTON */
+    /* Music button: normal flow, centered */
     .music-control {
-      position: relative !important;
+      position: static !important;
       transform: none !important;
       display: inline-block;
       margin-top: 16px;
@@ -177,8 +182,8 @@
     <h1 id="valentineText"></h1>
 
     <section class="button-zone" id="zone">
-      <button id="yesBtn">Yes</button>
-      <button id="noBtn">No</button>
+      <button id="yesBtn" type="button">Yes</button>
+      <button id="noBtn" type="button">No</button>
     </section>
 
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
@@ -190,8 +195,8 @@
         After March 23rd and Dec 16th ofcourse :) .
       </p>
 
-      <!-- 🎵 Music Button (Now Fixed Position) -->
-      <button id="musicToggle" class="music-control">⏸ Pause Music</button>
+      <!-- Music Button -->
+      <button id="musicToggle" class="music-control" type="button">⏸ Pause Music</button>
 
       <p class="plan">Get ready for 2 hrs of adventure, dinner with "Tabs" 🍆👀 :)</p>
 
@@ -210,7 +215,10 @@
     </section>
   </main>
 
-  <audio id="bgMusic" src="song1.mp3" preload="auto"></audio>
+  <!-- ✅ Audio with explicit MIME type -->
+  <audio id="bgMusic" preload="auto" playsinline>
+    <source src="./song1.mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     const zone = document.getElementById("zone");
@@ -228,8 +236,12 @@
         `${randomName}, will you be my valentine?`;
     })();
 
-    yesBtn.addEventListener("click", async () => {
+    // Optional debug (safe to keep)
+    music.addEventListener("canplay", () => console.log("Audio canplay"));
+    music.addEventListener("playing", () => console.log("Audio playing"));
+    music.addEventListener("error", () => console.log("Audio error:", music.error));
 
+    yesBtn.addEventListener("click", async () => {
       const mouth = document.getElementById("mouth");
       const leftEye = document.getElementById("leftEye");
       const rightEye = document.getElementById("rightEye");
@@ -244,21 +256,39 @@
 
       result.scrollIntoView({ behavior: "smooth", block: "start" });
 
+      // ✅ iOS/Safari-friendly start: play muted first, then unmute
       try {
-        music.volume = 0.85;
+        music.pause();
+        music.currentTime = 0;
+        music.load();
+
+        music.muted = true;
         await music.play();
+        music.muted = false;
+
+        music.volume = 0.85;
+        musicToggle.textContent = "⏸ Pause Music";
       } catch (err) {
-        console.log("Autoplay blocked:", err);
+        console.log("PLAY FAILED:", err.name, err.message, err);
+        alert("Music is blocked by the browser. Tap the ⏸/▶ button once to enable sound 🙂");
       }
     });
 
-    musicToggle.addEventListener("click", () => {
-      if (music.paused) {
-        music.play();
-        musicToggle.textContent = "⏸ Pause Music";
-      } else {
-        music.pause();
-        musicToggle.textContent = "▶ Resume Music";
+    musicToggle.addEventListener("click", async () => {
+      try {
+        if (music.paused) {
+          // If browser is strict, this click is a valid gesture
+          await music.play();
+          music.muted = false;
+          music.volume = 0.85;
+          musicToggle.textContent = "⏸ Pause Music";
+        } else {
+          music.pause();
+          musicToggle.textContent = "▶ Resume Music";
+        }
+      } catch (err) {
+        console.log("TOGGLE PLAY FAILED:", err.name, err.message, err);
+        alert("Still blocked. Try opening in Chrome or re-exporting the MP3 as a standard MP3 (CBR 128–192kbps).");
       }
     });
   </script>
